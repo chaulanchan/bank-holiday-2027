@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 🔍 SEO Optimised Title & Description -->
+    <title>2027 Public Holidays (HK, UK, CA, AU)</title>
+    <meta name="description" content="Check official 2027 public holidays and bank holidays for Hong Kong, UK, Canada, and Australia. Mobile friendly and supports offline mode.">
+    
+    <style>
+        /* 🎨 Clean, Apple-inspired UI Styling */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; padding: 20px; text-align: center; color: #1d1d1f; }
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); max-width: 500px; margin: 30px auto; text-align: left; }
+        h1 { text-align: center; font-size: 24px; color: #1d1d1f; margin-bottom: 20px; }
+        label { font-size: 14px; font-weight: bold; color: #86868b; display: block; margin-bottom: 5px; }
+        select { width: 100%; padding: 12px; border: 1px solid #d2d2d7; border-radius: 10px; font-size: 16px; background-color: #f5f5f7; margin-bottom: 25px; -webkit-appearance: none; cursor: pointer; }
+        
+        /* 📊 動態面板容器 */
+        #dynamicDisplay { margin-bottom: 25px; }
+
+  /* 4國總日數概覽樣式 */
+        .overview-title { font-size: 13px; font-weight: bold; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .overview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        /* 📊 修改後的方塊樣式：鎖定高度，並強制左右排列 */
+.overview-box { 
+    background: #f5f5f7; 
+    border-radius: 16px;       /* 保持你原本漂亮的圓角 */
+    border: 1px solid #e5e5ea; 
+    
+    /* 🛠️ 關鍵 1：鎖定你原來的方格高度，並利用 Flex 讓裡面元件變成左右排 */
+    height: 70px;              /* 這裏固定高度，你可以根據原本的高度微調（例如 70px 至 80px） */
+    display: flex;             /* 啟用彈性佈局 */
+    flex-direction: row;       /* 強制橫向（左右）排列 */
+    justify-content: space-between; /* 將國家推到最左，日數推到最右 */
+    align-items: center;       /* 確保左右兩邊內容垂直居中對齊 */
+    padding: 0 24px;           /* 調整左右內邊距，留出兩側空間 */
+    
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 左邊國家名 */
+.overview-box .flag-name { 
+    font-size: 15px; 
+    color: #1d1d1f; 
+    font-weight: 600; 
+    margin-bottom: 0;          /* 🛠️ 關鍵 2：拿走原本往下的間距，避免高低不平 */
+    display: flex;
+    align-items: center;
+}
+
+/* 右邊天數 */
+.overview-box .days-count { 
+    font-size: 30px;           /* 保持原本大字體的醒目藍色日數 */
+    font-weight: 250; 
+    color: #0071e3; 
+    margin-top: 0;             /* 確保沒有額外的頂部間距 */
+}
+
+/* 滑鼠指過去時的微動效 */
+.overview-box:hover {
+    background: #f0f0f3;
+}
+
+
+
+
+        /* 單一國家總日數條樣式 */
+        .single-count-strip { font-size: 14px; font-weight: 500; color: #1d1d1f; background: #e8f0fe; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .single-count-strip span { color: #0071e3; font-weight: bold; font-size: 16px; }
+
+        /* 詳細列表標題 */
+        .list-heading { font-size: 14px; font-weight: bold; color: #86868b; margin-bottom: 10px; }
+
+        .holiday-list { list-style: none; padding: 0; margin: 0; }
+        .holiday-item { padding: 12px 8px; border-bottom: 1px solid #f5f5f7; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .holiday-item:last-child { border-bottom: none; }
+        .holiday-name { font-weight: 500; font-size: 15px; line-height: 1.4; }
+        .holiday-date { color: #0071e3; font-size: 14px; font-weight: bold; white-space: nowrap; }
+        .badge { background: #e8f0fe; color: #1a73e8; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: normal; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+    <h1>📅 2027 Public Holidays </h1>
+    
+    <label for="countrySelect">👇🏻Select Country / Region to view details:</label>
+    <select id="countrySelect" onchange="updateHolidays()">
+        <option value="overview" selected>📊 Overview (總覽)</option>
+        <option value="hk">🇭🇰 Hong Kong (香港)</option>
+        <option value="uk">🇬🇧 United Kingdom (England)</option>
+        <option value="ca">🇨🇦 Canada (Ontario)</option>
+        <option value="au">🇦🇺 Australia (NSW)</option>
+    </select>
+
+    <!-- 📦 容器 1：一開始顯示的 4 個國家方塊（直接預填好日數） -->
+    <div id="allCountriesBoxes">
+        <div class="overview-title">2027 Total Holidays Overview</div>
+        <div class="overview-grid">
+            <div class="overview-box" onclick="clickBox('hk')" style="cursor: pointer;"><div class="flag-name">🇭🇰 HK</div><div class="days-count">17 Days</div></div>
+            <div class="overview-box" onclick="clickBox('uk')" style="cursor: pointer;"><div class="flag-name">🇬🇧 UK</div><div class="days-count">8 Days</div></div>
+            <div class="overview-box" onclick="clickBox('ca')" style="cursor: pointer;"><div class="flag-name">🇨🇦 CA</div><div class="days-count">11 Days</div></div>
+            <div class="overview-box" onclick="clickBox('au')" style="cursor: pointer;"><div class="flag-name">🇦🇺 AU</div><div class="days-count">11 Days</div></div>
+        </div>
+    </div>
+
+    <!-- 📦 容器 2：揀選國家後才顯示的詳細清單（預設隱藏 style="display: none;"） -->
+    <div id="selectedCountryDetails" style="display: none;">
+        <div class="single-count-strip">
+            <div id="selectedCountryName" style="font-weight: bold;"></div>
+            <div>Total: <span id="selectedCountryDays">0</span> Days</div>
+        </div>
+        <div class="list-heading" style="margin-top: 15px;">Holiday Details:</div>
+        <ul id="holidayList" class="holiday-list"></ul>
+    </div>
+</div>
+
+<script>
+// 🧱 2027 官方公眾假期數據庫
+const holidayData = {
+    hk: [
+        { name: "New Year's Day <br><span style='color:#6e6e73; font-size:13px;'>元旦</span>", date: "Jan 1 (Fri)" },
+        { name: "Lunar New Year's Day <br><span style='color:#6e6e73; font-size:13px;'>農曆年初一</span>", date: "Feb 6 (Sat)" },
+        { name: "The third day of Lunar New Year <br><span style='color:#6e6e73; font-size:13px;'>農曆年初三</span>", date: "Feb 8 (Mon)" },
+        { name: "The fourth day of Lunar New Year <span class='badge'>Sub</span><br><span style='color:#6e6e73; font-size:13px;'>農曆年初四</span>", date: "Feb 9 (Tue)" },
+        { name: "Good Friday <br><span style='color:#6e6e73; font-size:13px;'>耶穌受難節</span>", date: "Mar 26 (Fri)" },
+        { name: "The day following Good Friday <br><span style='color:#6e6e73; font-size:13px;'>耶穌受難節翌日</span>", date: "Mar 27 (Sat)" },
+        { name: "Easter Monday <br><span style='color:#6e6e73; font-size:13px;'>復活節星期一</span>", date: "Mar 29 (Mon)" },
+        { name: "Ching Ming Festival <br><span style='color:#6e6e73; font-size:13px;'>清明節</span>", date: "Apr 5 (Mon)" },
+        { name: "Labour Day <br><span style='color:#6e6e73; font-size:13px;'>勞動節</span>", date: "May 1 (Sat)" },
+        { name: "Birthday of the Buddha <br><span style='color:#6e6e73; font-size:13px;'>佛誕</span>", date: "May 13 (Thu)" },
+        { name: "Tuen Ng Festival <br><span style='color:#6e6e73; font-size:13px;'>端午節</span>", date: "Jun 9 (Wed)" },
+        { name: "HKSAR Establishment Day <br><span style='color:#6e6e73; font-size:13px;'>香港特別行政區成立紀念日</span>", date: "Jul 1 (Thu)" },
+        { name: "The day following the Chinese Mid-Autumn Festival <br><span style='color:#6e6e73; font-size:13px;'>中秋節翌日</span>", date: "Sep 16 (Thu)" },
+        { name: "National Day <br><span style='color:#6e6e73; font-size:13px;'>國慶日</span>", date: "Oct 1 (Fri)" },
+        { name: "Chung Yeung Festival <br><span style='color:#6e6e73; font-size:13px;'>重陽節</span>", date: "Oct 8 (Fri)" },
+        { name: "Christmas Day <br><span style='color:#6e6e73; font-size:13px;'>聖誕節</span>", date: "Dec 25 (Sat)" },
+        { name: "The first weekday after Christmas Day <span class='badge'>Sub</span><br><span style='color:#6e6e73; font-size:13px;'>聖誕節後第一個周日</span>", date: "Dec 27 (Mon)" }
+    ],
+    uk: [
+        { name: "New Year's Day", date: "Jan 1 (Fri)" },
+        { name: "Good Friday", date: "Mar 26 (Fri)" },
+        { name: "Easter Monday", date: "Apr 5 (Mon)" },
+        { name: "Early May Bank Holiday", date: "May 3 (Mon)" },
+        { name: "Spring Bank Holiday", date: "May 31 (Mon)" },
+        { name: "Summer Bank Holiday", date: "Aug 30 (Mon)" },
+        { name: "Christmas Day <span class='badge'>Substitute Day</span>", date: "Dec 27 (Mon)" },
+        { name: "Boxing Day <span class='badge'>Substitute Day</span>", date: "Dec 28 (Tue)" }
+    ],
+    ca: [
+        { name: "New Year's Day", date: "Jan 1 (Fri)" },
+        { name: "Family Day", date: "Feb 15 (Mon)" },
+        { name: "Good Friday", date: "Mar 26 (Fri)" },
+        { name: "Victoria Day", date: "May 24 (Mon)" },
+        { name: "Canada Day", date: "Jul 1 (Thu)" },
+        { name: "Civic Holiday", date: "Aug 2 (Mon)" },
+        { name: "Labour Day", date: "Sep 6 (Mon)" },
+        { name: "National Day for Truth and Reconciliation", date: "Sep 30 (Thu)" },
+        { name: "Thanksgiving Day", date: "Oct 11 (Mon)" },
+        { name: "Christmas Day <span class='badge'>Substitute Day</span>", date: "Dec 27 (Mon)" },
+        { name: "Boxing Day", date: "Dec 28 (Tue)" }
+    ],
+    au: [
+        { name: "New Year's Day", date: "Jan 1 (Fri)" },
+        { name: "Australia Day", date: "Jan 26 (Tue)" },
+        { name: "Good Friday", date: "Mar 26 (Fri)" },
+        { name: "Easter Saturday", date: "Mar 27 (Sat)" },
+        { name: "Easter Sunday", date: "Mar 28 (Sun)" },
+        { name: "Easter Monday", date: "Apr 5 (Mon)" },
+        { name: "Anzac Day", date: "Apr 25 (Sun)" },
+        { name: "King's Birthday", date: "Jun 14 (Mon)" },
+        { name: "Labour Day", date: "Oct 4 (Mon)" },
+        { name: "Christmas Day <span class='badge'>Substitute Day</span>", date: "Dec 27 (Mon)" },
+        { name: "Boxing Day <span class='badge'>Substitute Day</span>", date: "Dec 28 (Tue)" }
+    ]
+};
+
+// 國家名稱對照表（用來顯示在藍色條條左邊）
+const countryNames = {
+    hk: "🇭🇰 Hong Kong (香港)",
+    uk: "🇬🇧 United Kingdom (England)",
+    ca: "🇨🇦 Canada (Ontario)",
+    au: "🇦🇺 Australia (NSW)"
+};
+
+// 🔄 當下拉選單改變時觸發這個 Function
+function updateHolidays() {
+    // 1. 拿取用家選了甚麼國家 (例如 "hk")
+    const selectedCountry = document.getElementById("countrySelect").value;
+    
+    // 2. 獲取 HTML 容器的控制權
+    const allBoxes = document.getElementById("allCountriesBoxes");
+    const detailsArea = document.getElementById("selectedCountryDetails");
+    const nameLabel = document.getElementById("selectedCountryName");
+    const daysLabel = document.getElementById("selectedCountryDays");
+    const listElement = document.getElementById("holidayList");
+    
+
+
+    // 3. 核心檢查：如果選取了 "overview"（總覽）
+    if (selectedCountry === "overview" || !selectedCountry) {
+        allBoxes.style.display = "";          // 🛠️ 關鍵修正：設為空字串，讓它自動回復 CSS 原本的佈局（Grid）
+        detailsArea.style.display = "none";    // 隱藏詳細清單區域
+        listElement.innerHTML = "";            // 清空詳細清單
+        return;
+    }
+
+    
+    // 4. 【核心控制】收起四國方塊，打開詳細區域
+    allBoxes.style.display = "none";     // 隱藏 4 個國家總數方塊
+    detailsArea.style.display = "block";  // 顯示詳細清單區域
+    
+    // 5. 更新上方藍色條條的國名和總日數
+    nameLabel.innerText = countryNames[selectedCountry];
+    daysLabel.innerText = holidayData[selectedCountry].length;
+    
+    // 6. 用迴圈把詳細假期清單塞進 <ul> 裡面展示出來
+    let listContent = "";
+    holidayData[selectedCountry].forEach(holiday => {
+        listContent += `
+            <li class="holiday-item">
+                <span class="holiday-name">${holiday.name}</span>
+                <span class="holiday-date">${holiday.date}</span>
+            </li>
+        `;
+    });
+    
+    // 7. 最後把砌好的詳細日子列表丟回畫面上
+    listElement.innerHTML = listContent;
+}
+
+// 🎯 新增：專門處理點擊方塊的函數
+function clickBox(countryCode) {
+    // 1. 讓下拉選單選中對應的國家
+    document.getElementById("countrySelect").value = countryCode;
+    
+    // 2. 直接呼叫你原本寫好的更新清單功能
+    updateHolidays();
+}
+
+
+</script>
+
+</body>
