@@ -1,189 +1,205 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 🔍 SEO Optimised Title & Description -->
-    <title>Dynamic Public Holidays Tracker</title>
-    <meta name="description" content="Check official public holidays dynamically loaded from cloud database. Mobile friendly and supports offline mode.">
-    
-    <style>
-        /* 🎨 Clean, Apple-inspired UI Styling */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; padding: 20px; text-align: center; color: #1d1d1f; }
-        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); max-width: 500px; margin: 30px auto; text-align: left; }
-        h1 { text-align: center; font-size: 24px; color: #1d1d1f; margin-bottom: 20px; }
-        label { font-size: 14px; font-weight: bold; color: #86868b; display: block; margin-bottom: 5px; }
-        
-        /* Dropdown Control Group */
-        .controls-group { display: flex; gap: 10px; margin-bottom: 25px; }
-        .select-wrapper { flex: 1; }
-        select { width: 100%; padding: 12px; border: 1px solid #d2d2d7; border-radius: 10px; font-size: 16px; background-color: #f5f5f7; -webkit-appearance: none; cursor: pointer; }
-        
-        /* 📊 Dynamic 4-Country/Multi-Country Overview Grid */
-        .overview-section { display: block; }
-        .overview-title { font-size: 13px; font-weight: bold; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-        .overview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; }
-        
-        .overview-box { 
-            background: #f5f5f7; border-radius: 16px; border: 1px solid #e5e5ea; 
-            height: 70px; display: flex; flex-direction: row; align-items: center; padding: 0 24px; 
-            cursor: pointer; transition: all 0.2s ease;
-        }
-        
-        /* 🖼️ Dynamic Image Flag Styles */
-        .flag-icon { width: 24px; height: 18px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .flag-container { display: flex; align-items: center; gap: 8px; font-size: 15px; color: #1d1d1f; font-weight: 600; width: 90px; flex-shrink: 0; }
-
-        .overview-box .days-count { font-size: 18px; font-weight: bold; color: #0071e3; flex-grow: 1; text-align: left; padding-left: 10px; }
-        .overview-box:hover { background: #f0f0f3; }
-
-        /* 🎯 Banner & Strip for Selected Item */
-        .single-count-strip { font-size: 14px; font-weight: 500; color: #1d1d1f; background: #e8f0fe; padding: 12px 16px; border-radius: 10px; margin-bottom: 25px; display: none; justify-content: space-between; align-items: center; }
-        .single-count-strip span { color: #0071e3; font-weight: bold; font-size: 16px; }
-
-        /* Dynamic Holiday Lists */
-        .list-heading { font-size: 14px; font-weight: bold; color: #86868b; margin-bottom: 10px; display: none; }
-        .holiday-list { list-style: none; padding: 0; margin: 0; }
-        .holiday-item { padding: 12px 8px; border-bottom: 1px solid #f5f5f7; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .holiday-item:last-child { border-bottom: none; }
-        .holiday-name { font-weight: 500; font-size: 15px; line-height: 1.4; }
-        .holiday-date { color: #0071e3; font-size: 14px; font-weight: bold; white-space: nowrap; }
-    </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
 </head>
 <body>
-
-    <div class="card">
-        <!-- Main Application View -->
-        <h1 id="appTitle">📅 Public Holidays Tracker</h1>
-        
-        <div class="controls-group">
-            <!-- Year Selection Filter -->
-            <div class="select-wrapper">
-                <label for="yearSelect">Year:</label>
-                <select id="yearSelect" onchange="fetchHolidaysFromDatabase()"></select>
-            </div>
-            <!-- Country Selection Filter -->
-            <div class="select-wrapper">
-                <label for="countrySelect">Region:</label>
-                <select id="countrySelect" onchange="updateHolidays()">
-                    <option value="overview" selected>📊 Overview (總覽)</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Section 1: Overview Grid Dashboard -->
-        <div id="overviewSection" class="overview-section">
-            <div id="overviewTitle" class="overview-title">Total Holidays Overview</div>
-            <div id="overviewGrid" class="overview-grid"></div>
-        </div>
-
-        <!-- Section 2: Banner Area Details -->
-        <div id="singleCountStrip" class="single-count-strip">
-            <div id="selectedCountryName" style="font-weight: bold; display: flex; align-items: center; gap: 8px;"></div>
-            <div>Total: <span id="selectedCountryDays">0</span> 天</div>
-        </div>
-
-        <div id="listHeading" class="list-heading">Holiday Details:</div>
-        <ul id="holidayList" class="holiday-list"></ul>
-    </div>
-
-    <script>
-        // 🔑 🛠️ IMPORTANT: Insert your actual Supabase credentials below
-        const SUPABASE_URL = "YOUR_SUPABASE_URL"; 
-        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY"; 
-
-        // Global Application State Stores
-        let allHolidaysData = [];
-        let uniqueYears = [];
-
-        // 🔄 Phase 1: Initialize application & fetch metadata lists
-        async function initializeApp() {
-            try {
-                // Fetch only unique years first to generate the year selector automatically
-                const yearApiUrl = `${SUPABASE_URL}/rest/v1/holidays?select=year`;
-                const response = await fetch(yearApiUrl, {
-                    method: "GET",
-                    headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
-                });
-                const yearsRaw = await response.json();
-                
-                // Get unique sorted years list
-                uniqueYears = [...new Set(yearsRaw.map(item => item.year))].sort((a, b) => b - a);
-                
-                const yearSelect = document.getElementById("yearSelect");
-                yearSelect.innerHTML = "";
-                uniqueYears.forEach(year => {
-                    const opt = document.createElement("option");
-                    opt.value = year;
-                    opt.innerText = year;
-                    yearSelect.appendChild(opt);
-                });
-
-                // Default fallback if no years exist yet
-                if(uniqueYears.length === 0) {
-                    const opt = document.createElement("option");
-                    opt.value = "2027"; opt.innerText = "2027";
-                    yearSelect.appendChild(opt);
-                }
-
-                // Fire initial operational load
-                await fetchHolidaysFromDatabase();
-            } catch (error) {
-                console.error("Initialization failure:", error);
-            }
-        }
-
-        // 🔄 Phase 2: Core Data Fetching Pipeline 
-        async function fetchHolidaysFromDatabase() {
-            const selectedYear = document.getElementById("yearSelect").value || 2027;
-            document.getElementById("appTitle").innerText = `📅 ${selectedYear} Public Holidays`;
-            document.getElementById("overviewTitle").innerText = `${selectedYear} Total Holidays Overview`;
-            
-            try {
-                // Fetch comprehensive matrix filtered by dynamically selected Year
-                const apiUrl = `${SUPABASE_URL}/rest/v1/holidays?year=eq.${selectedYear}&select=*`;
-                const response = await fetch(apiUrl, {
-                    method: "GET",
-                    headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
-                });
-                
-                allHolidaysData = await response.json();
-                
-                // Regenerate matching country lists and options mapping data matrix
-                buildDynamicCountryUI();
-            } catch (error) {
-                console.error("Database fetch pipeline failed:", error);
-            }
-        }
-
-        // 🛠️ Phase 3: Construct Dynamic HTML Elements from Data Matrix
-        function buildDynamicCountryUI() {
-            // Locate target records mapping
-            const countryCodes = [...new Set(allHolidaysData.map(item => item.country))];
-            
-            const selectElement = document.getElementById("countrySelect");
-            const gridElement = document.getElementById("overviewGrid");
-            
-            // Clean selection options except standard default dashboard index view
-            selectElement.innerHTML = '<option value="overview" selected>📊 Overview (總覽)</option>';
-            gridElement.innerHTML = "";
-            
-            countryCodes.forEach(code => {
-                const countryHolidays = allHolidaysData.filter(h => h.country === code);
-                const count = countryHolidays.length;
-                
-                // Pull properties cleanly from the target rows directly
-                const sampleRow = countryHolidays[0];
-                const flagUrl = sampleRow.country_flag || "";
-                const countryLabelName = sampleRow.country_name || code.toUpperCase();
-                const shortDisplayCode = code.toUpperCase();
-                
-                // Add Country Option to Selector Control dropdown menu list
-                const option = document.createElement("option");
-                option.value = code;
-                option.innerText = `🏳️ ${countryLabelName}`;
-                selectElement.appendChild(option);
-                
-                // Inject Responsive Horizontal Grid Layout Box Dashboard Item Card
-                const box = document.createElement("div");
-                box.className = "overview-box";
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- 🔍 SEO Optimised Title &amp; Description --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Dynamic Public Holidays Tracker&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="description" content="Check official public holidays dynamically loaded from cloud database. Mobile friendly and supports offline mode."&gt;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* 🎨 Clean, Apple-inspired UI Styling */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; padding: 20px; text-align: center; color: #1d1d1f; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); max-width: 500px; margin: 30px auto; text-align: left; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>h1 { text-align: center; font-size: 24px; color: #1d1d1f; margin-bottom: 20px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>label { font-size: 14px; font-weight: bold; color: #86868b; display: block; margin-bottom: 5px; }</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* Dropdown Control Group */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.controls-group { display: flex; gap: 10px; margin-bottom: 25px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.select-wrapper { flex: 1; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>select { width: 100%; padding: 12px; border: 1px solid #d2d2d7; border-radius: 10px; font-size: 16px; background-color: #f5f5f7; -webkit-appearance: none; cursor: pointer; }</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* 📊 Dynamic 4-Country/Multi-Country Overview Grid */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.overview-section { display: block; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.overview-title { font-size: 13px; font-weight: bold; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.overview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; }</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.overview-box {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #f5f5f7; border-radius: 16px; border: 1px solid #e5e5ea;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>height: 70px; display: flex; flex-direction: row; align-items: center; padding: 0 24px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer; transition: all 0.2s ease;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* 🖼️ Dynamic Image Flag Styles */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.flag-icon { width: 24px; height: 18px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.flag-container { display: flex; align-items: center; gap: 8px; font-size: 15px; color: #1d1d1f; font-weight: 600; width: 90px; flex-shrink: 0; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.overview-box .days-count { font-size: 18px; font-weight: bold; color: #0071e3; flex-grow: 1; text-align: left; padding-left: 10px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.overview-box:hover { background: #f0f0f3; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* 🎯 Banner &amp; Strip for Selected Item */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.single-count-strip { font-size: 14px; font-weight: 500; color: #1d1d1f; background: #e8f0fe; padding: 12px 16px; border-radius: 10px; margin-bottom: 25px; display: none; justify-content: space-between; align-items: center; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.single-count-strip span { color: #0071e3; font-weight: bold; font-size: 16px; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* Dynamic Holiday Lists */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.list-heading { font-size: 14px; font-weight: bold; color: #86868b; margin-bottom: 10px; display: none; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.holiday-list { list-style: none; padding: 0; margin: 0; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.holiday-item { padding: 12px 8px; border-bottom: 1px solid #f5f5f7; display: flex; justify-content: space-between; align-items: center; gap: 10px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.holiday-item:last-child { border-bottom: none; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.holiday-name { font-weight: 500; font-size: 15px; line-height: 1.4; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.holiday-date { color: #0071e3; font-size: 14px; font-weight: bold; white-space: nowrap; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- Main Application View --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h1 id="appTitle"&gt;📅 Public Holidays Tracker&lt;/h1&gt;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="controls-group"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Year Selection Filter --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="select-wrapper"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;label for="yearSelect"&gt;Year:&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;select id="yearSelect" onchange="fetchHolidaysFromDatabase()"&gt;&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Country Selection Filter --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="select-wrapper"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;label for="countrySelect"&gt;Region:&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;select id="countrySelect" onchange="updateHolidays()"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="overview" selected&gt;📊 Overview (總覽)&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- Section 1: Overview Grid Dashboard --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="overviewSection" class="overview-section"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="overviewTitle" class="overview-title"&gt;Total Holidays Overview&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="overviewGrid" class="overview-grid"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- Section 2: Banner Area Details --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="singleCountStrip" class="single-count-strip"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="selectedCountryName" style="font-weight: bold; display: flex; align-items: center; gap: 8px;"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div&gt;Total: &lt;span id="selectedCountryDays"&gt;0&lt;/span&gt; 天&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="listHeading" class="list-heading"&gt;Holiday Details:&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;ul id="holidayList" class="holiday-list"&gt;&lt;/ul&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 🔑 🛠️ IMPORTANT: Insert your actual Supabase credentials below</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const SUPABASE_URL = "YOUR_SUPABASE_URL";<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";<span class="Apple-converted-space"> </span></p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Global Application State Stores</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let allHolidaysData = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let uniqueYears = [];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 🔄 Phase 1: Initialize application &amp; fetch metadata lists</p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function initializeApp() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Fetch only unique years first to generate the year selector automatically</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const yearApiUrl = `${SUPABASE_URL}/rest/v1/holidays?select=year`;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const response = await fetch(yearApiUrl, {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>method: "GET",</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const yearsRaw = await response.json();</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Get unique sorted years list</p>
+<p class="p1"><span class="Apple-converted-space">                </span>uniqueYears = [...new Set(yearsRaw.map(item =&gt; item.year))].sort((a, b) =&gt; b - a);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>const yearSelect = document.getElementById("yearSelect");</p>
+<p class="p1"><span class="Apple-converted-space">                </span>yearSelect.innerHTML = "";</p>
+<p class="p1"><span class="Apple-converted-space">                </span>uniqueYears.forEach(year =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const opt = document.createElement("option");</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>opt.value = year;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>opt.innerText = year;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>yearSelect.appendChild(opt);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Default fallback if no years exist yet</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if(uniqueYears.length === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const opt = document.createElement("option");</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>opt.value = "2027"; opt.innerText = "2027";</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>yearSelect.appendChild(opt);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Fire initial operational load</p>
+<p class="p1"><span class="Apple-converted-space">                </span>await fetchHolidaysFromDatabase();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>console.error("Initialization failure:", error);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 🔄 Phase 2: Core Data Fetching Pipeline<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function fetchHolidaysFromDatabase() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const selectedYear = document.getElementById("yearSelect").value || 2027;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById("appTitle").innerText = `📅 ${selectedYear} Public Holidays`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById("overviewTitle").innerText = `${selectedYear} Total Holidays Overview`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Fetch comprehensive matrix filtered by dynamically selected Year</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const apiUrl = `${SUPABASE_URL}/rest/v1/holidays?year=eq.${selectedYear}&amp;select=*`;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const response = await fetch(apiUrl, {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>method: "GET",</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>allHolidaysData = await response.json();</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Regenerate matching country lists and options mapping data matrix</p>
+<p class="p1"><span class="Apple-converted-space">                </span>buildDynamicCountryUI();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>console.error("Database fetch pipeline failed:", error);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 🛠️ Phase 3: Construct Dynamic HTML Elements from Data Matrix</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function buildDynamicCountryUI() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Locate target records mapping</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const countryCodes = [...new Set(allHolidaysData.map(item =&gt; item.country))];</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const selectElement = document.getElementById("countrySelect");</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const gridElement = document.getElementById("overviewGrid");</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Clean selection options except standard default dashboard index view</p>
+<p class="p1"><span class="Apple-converted-space">            </span>selectElement.innerHTML = '&lt;option value="overview" selected&gt;📊 Overview (總覽)&lt;/option&gt;';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gridElement.innerHTML = "";</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>countryCodes.forEach(code =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const countryHolidays = allHolidaysData.filter(h =&gt; h.country === code);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const count = countryHolidays.length;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Pull properties cleanly from the target rows directly</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const sampleRow = countryHolidays[0];</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const flagUrl = sampleRow.country_flag || "";</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const countryLabelName = sampleRow.country_name || code.toUpperCase();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const shortDisplayCode = code.toUpperCase();</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Add Country Option to Selector Control dropdown menu list</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const option = document.createElement("option");</p>
+<p class="p1"><span class="Apple-converted-space">                </span>option.value = code;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>option.innerText = `🏳️ ${countryLabelName}`;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>selectElement.appendChild(option);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Inject Responsive Horizontal Grid Layout Box Dashboard Item Card</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const box = document.createElement("div");</p>
+<p class="p1"><span class="Apple-converted-space">                </span>box.className = "overview-box";</p>
+</body>
+</html>
